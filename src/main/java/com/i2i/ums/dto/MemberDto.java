@@ -2,15 +2,20 @@ package com.i2i.ums.dto;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
+
+import com.i2i.ums.annotations.ValidCredentials;
+
+@ValidCredentials
 public class MemberDto {
     private String id;
     private String name;
     private String username;
     private String password;
     private String teamName;
-    private List<ContactDto> contacts;
+    private List<@Valid ContactDto> contacts;
     private List<String> roles;
-    private AddressDto addressDto;
+    private AddressDto address;
 
     public MemberDto() {}
 
@@ -54,12 +59,12 @@ public class MemberDto {
         this.roles = roles;
     }
 
-    public AddressDto getAddressDto() {
-        return addressDto;
+    public AddressDto getAddress() {
+        return address;
     }
 
-    public void setAddressDto(AddressDto addressDto) {
-        this.addressDto = addressDto;
+    public void setAddress(AddressDto address) {
+        this.address = address;
     }
 
     public String getUsername() {

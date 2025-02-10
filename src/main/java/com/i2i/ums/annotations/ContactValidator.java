@@ -1,42 +1,37 @@
 package com.i2i.ums.annotations;
 
-import java.util.List;
 import java.util.regex.Pattern;
 
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
-import org.springframework.stereotype.Component;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import org.hibernate.validator.internal.engine.constraintvalidation.ConstraintValidatorContextImpl;
 
 import com.i2i.ums.dto.ContactDto;
-import com.i2i.ums.dto.MemberDto;
 import com.i2i.ums.exception.InvalidContactException;
 
-@Aspect
-@Component
-public class ContactValidator{
+import static com.i2i.ums.utils.Util.EMAIL_PATTERN;
+import static com.i2i.ums.utils.Util.MOBILE_PATTERN;
 
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
-    private static final Pattern MOBILE_PATTERN = Pattern.compile("^\\d{10}$");
+public class ContactValidator implements ConstraintValidator<ValidContact, ContactDto> {
 
-    @Pointcut("execution(* com.i2i.ums.controller.MemberController.createUser(..))")
-    public void createUser() {}
-
-    @Before("createUser()")
-    public void validateContactsOfUser(JoinPoint joinPoint) throws Throwable {
-        Object[] args = joinPoint.getArgs();
-        MemberDto dto = (MemberDto) args[0];
-        List<ContactDto> contacts = dto.getContacts();
-        for(ContactDto contact: contacts) {
-            String medium = contact.getMedium().toLowerCase();
-            if (medium.equals("email") && !EMAIL_PATTERN.matcher(contact.getValue()).matches()) {
-                throw new InvalidContactException("Invalid Email. Check the format of the email.");
-            } else if (medium.equals("mobile") && !MOBILE_PATTERN.matcher(contact.getValue()).matches()) {
-                throw new InvalidContactException("Invalid Mobile Number. Mobile Number Should be 10-digits.");
-            }
-        }
+    @Override
+    public void initialize(ValidContact constraintAnnotation) {
+        ConstraintValidator.super.initialize(constraintAnnotation);
     }
 
-
+    @Override
+    public boolean isValid(ContactDto contactDto, ConstraintValidatorContext constraintValidatorContext) {
+        if (contactDto.getMedium().equals("email") && !EMAIL_PATTERN.matcher(contactDto.getValue()).matches()) {
+            ((ConstraintValidatorContextImpl) constraintValidatorContext)
+                    .addMessageParameter("com.i2i.ums.annotations.ValidContact.message",
+                    "Invalid Email. Please check the email.");
+            return false;
+        } else if (contactDto.getMedium().equals("mobile") && !MOBILE_PATTERN.matcher(contactDto.getValue()).matches()) {
+            ((ConstraintValidatorContextImpl) constraintValidatorContext)
+                    .addMessageParameter("com.i2i.ums.annotations.ValidContact.message",
+                    "Invalid Mobile number. Mobile number should have 10 digits");
+            return false;
+        }
+        return true;
+    }
 }

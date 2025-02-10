@@ -71,10 +71,16 @@ public class MemberServiceImpl implements MemberService {
     public MemberDto getMemberDtoByUsername(String username) {
         Member member = getMemberByUsername(username);
         MemberDto dto = mapper.map(member, MemberDto.class);
-        if (!username.equals(member.getUsername())) {
-            dto.setAddressDto(null);
-        }
+        dto.setAddress(null);
         log.info("DTO of the member with Username fetched successfully");
+        return dto;
+    }
+
+    @Override
+    public MemberDto getProfileByUsername(String username) {
+        Member member = getMemberByUsername(username);
+        MemberDto dto = mapper.map(member, MemberDto.class);
+        log.info("Profile of the member with Username fetched successfully");
         return dto;
     }
 

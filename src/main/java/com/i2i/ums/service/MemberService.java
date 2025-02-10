@@ -8,6 +8,7 @@ import com.i2i.ums.dto.*;
 
 public interface MemberService {
     IdNameDto createMember(MemberDto dto);
+    MemberDto getProfileByUsername(String username);
     MemberDto getMemberDtoByUsername(String username);
     List<MemberSummaryDto> getAllMembers();
     UpdatedDto addMemberToTeamByName(String teamName, String memberName);

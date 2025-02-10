@@ -63,6 +63,6 @@ public class Team {
     }
 
     public int getMemberCount() {
-        return !ObjectUtils.isEmpty(members) ? members.size() : 0;
+        return ObjectUtils.isEmpty(members) ? 0 : members.size();
     }
 }

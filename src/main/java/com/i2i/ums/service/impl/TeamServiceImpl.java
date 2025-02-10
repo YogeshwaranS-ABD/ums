@@ -14,7 +14,6 @@ import com.i2i.ums.dto.TeamDto;
 import com.i2i.ums.dto.TeamSummaryDto;
 import com.i2i.ums.exception.TeamNotFoundException;
 import com.i2i.ums.mapper.Mapper;
-import com.i2i.ums.mapper.TeamMapper;
 import com.i2i.ums.model.Team;
 import com.i2i.ums.repository.TeamRepository;
 import com.i2i.ums.service.TeamService;

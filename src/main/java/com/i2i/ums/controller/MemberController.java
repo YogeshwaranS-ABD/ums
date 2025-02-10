@@ -2,6 +2,7 @@ package com.i2i.ums.controller;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import com.i2i.ums.annotations.ContactValidate;
+import com.i2i.ums.annotations.ValidContact;
 import com.i2i.ums.dto.*;
 import com.i2i.ums.service.MemberService;
 
@@ -36,7 +37,7 @@ public class MemberController {
 
     @PostMapping()
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<IdNameDto> createUser(@ContactValidate @RequestBody MemberDto dto) {
+    public ResponseEntity<IdNameDto> createUser(@Valid @RequestBody MemberDto dto) {
         log.debug("POST Request to create a new Member");
         return new ResponseEntity<>(memberService.createMember(dto), HttpStatus.CREATED);
     }
@@ -44,11 +45,11 @@ public class MemberController {
     @GetMapping("/me")
     public ResponseEntity<MemberDto> getMyProfile(@RequestAttribute("username") String username) {
         log.debug("GET Request to view the user's details");
-        return new ResponseEntity<>(memberService.getMemberDtoByUsername(username), HttpStatus.OK);
+        return new ResponseEntity<>(memberService.getProfileByUsername(username), HttpStatus.OK);
     }
 
     @GetMapping("/{username}")
-    public ResponseEntity<MemberDto> getMemberByName(@PathVariable("username") String username) {
+    public ResponseEntity<MemberDto> getMemberByUsername(@PathVariable("username") String username) {
         log.debug("GET Request to view the Member: {}'s details", username);
         return new ResponseEntity<>(memberService.getMemberDtoByUsername(username), HttpStatus.OK);
     }

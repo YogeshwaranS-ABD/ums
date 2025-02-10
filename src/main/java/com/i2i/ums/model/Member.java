@@ -24,7 +24,7 @@ public class Member {
     @Column(unique = true)
     private String username;
 
-    @Column(unique = true)
+    @Column
     private String password;
 
     @Column

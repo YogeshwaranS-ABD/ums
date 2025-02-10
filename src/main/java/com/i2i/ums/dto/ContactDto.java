@@ -1,5 +1,8 @@
 package com.i2i.ums.dto;
 
+import com.i2i.ums.annotations.ValidContact;
+
+@ValidContact
 public class ContactDto {
     private String medium;
     private String useType;
