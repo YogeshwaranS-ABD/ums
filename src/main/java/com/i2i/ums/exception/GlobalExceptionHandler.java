@@ -1,6 +1,8 @@
 package com.i2i.ums.exception;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -44,12 +47,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponseDto handleDataIntegrityViolationException(DataIntegrityViolationException e) {
-        String message = e.getLocalizedMessage();
-        if (message.contains("members_username_key")) {
-            message = "The Username already exists, Try with another!";
-        } else if (message.contains("contacts_value_key")) {
-            message = "The Contact already exists. Try with other.";
-        }
+        String message = e.getMostSpecificCause().getMessage().split("\\n")[1];
         return new ErrorResponseDto(HttpStatus.CONFLICT.value(), message);
     }
 
@@ -98,8 +96,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponseDto handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        String message = e.getLocalizedMessage();
-        return new ErrorResponseDto(HttpStatus.BAD_REQUEST.value(), message.substring(424, 483));
+        String message = e.getDetailMessageArguments()[1].toString();
+        message = (ObjectUtils.isEmpty(message)) ? Arrays.toString(e.getDetailMessageArguments()) : message;
+        return new ErrorResponseDto(HttpStatus.BAD_REQUEST.value(), message);
+    }
+
+    @ExceptionHandler(UmsException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponseDto handleUmsException(UmsException e) {
+        return new ErrorResponseDto(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+    }
+
+    @ExceptionHandler(ConstrainViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public List<List<String>> handleConstraintsViolation(ConstrainViolationException e) {
+        return e.getViolations();
     }
 
     @ExceptionHandler(Exception.class)

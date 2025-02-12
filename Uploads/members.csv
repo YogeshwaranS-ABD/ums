@@ -1,0 +1,3 @@
+name,teamName,username,password,roles,address,contacts
+A006,team_a,130@asd.asd,Asd1,member|treasurer,No. 22|Fifth Street|Thiruvalluvar nagar|Chennai|600100,"email|personal|130@asd.asd,mobile|personal|8762300001"
+A007,team_a,131@asd.asd,Asd1,member|team_lead,No. 32|Fourth Street|Thiruvalluvar nagar|Chennai|600100,"email|personal|131@asd.asd,mobile|personal|8762300002"

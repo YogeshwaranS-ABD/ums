@@ -3,6 +3,7 @@ package com.i2i.ums.service;
 import java.util.List;
 
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.i2i.ums.dto.*;
 
@@ -16,4 +17,5 @@ public interface MemberService {
     UpdatedDto updateMemberContacts(String name, ContactsUpdateDto dto);
     UpdatedDto updateAddressOfMember(String memberName, AddressDto dto);
     UserDetails getUserCredentials(String username);
+    List<IdNameDto> createMemberWithFile(MultipartFile file);
 }

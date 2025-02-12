@@ -20,10 +20,15 @@ public class CredentialsValidator implements ConstraintValidator<ValidCredential
 
     @Override
     public boolean isValid(MemberDto member, ConstraintValidatorContext constraintValidatorContext) {
-        if (ObjectUtils.isEmpty(member)) {
-            return true;
-        }
-        boolean result = member.getContacts().stream().anyMatch(contact -> contact.getValue().equals(member.getUsername()));
+        boolean result =  ObjectUtils.isEmpty(member.getContacts())
+                || member.getContacts()
+                .stream()
+                .anyMatch(contact -> {
+                    if (ObjectUtils.isEmpty(contact.getValue())) {
+                        return false;
+                    }
+                    return contact.getValue().equals(member.getUsername());
+                });
         if (!result) {
             ((ConstraintValidatorContextImpl) constraintValidatorContext)
                     .addMessageParameter("com.i2i.ums.annotations.ValidCredentials.message",

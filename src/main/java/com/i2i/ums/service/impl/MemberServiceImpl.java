@@ -1,9 +1,17 @@
 package com.i2i.ums.service.impl;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.opencsv.bean.CsvToBeanBuilder;
+import jakarta.validation.*;
+import jakarta.validation.groups.Default;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +21,15 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.i2i.ums.annotations.CustomCheckGroups;
 import com.i2i.ums.dto.*;
+import com.i2i.ums.exception.ConstrainViolationException;
+import com.i2i.ums.exception.InvalidContactException;
+import com.i2i.ums.exception.UmsException;
 import com.i2i.ums.exception.UserNotFoundException;
 import com.i2i.ums.mapper.Mapper;
 import com.i2i.ums.model.*;
@@ -23,9 +38,9 @@ import com.i2i.ums.service.ContactService;
 import com.i2i.ums.service.MemberService;
 import com.i2i.ums.service.RoleService;
 import com.i2i.ums.service.TeamService;
+import com.i2i.ums.utils.Util;
 
 @Service
-@Slf4j
 public class MemberServiceImpl implements MemberService {
 
     private static final Logger log = LoggerFactory.getLogger(MemberServiceImpl.class);
@@ -34,6 +49,7 @@ public class MemberServiceImpl implements MemberService {
     private final TeamService teamService;
     private final ContactService contactService;
     private final Mapper mapper;
+
 
     @Autowired
     public MemberServiceImpl(MemberRepository memberRepository,
@@ -50,6 +66,15 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public IdNameDto createMember(MemberDto dto) {
+//        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+//        Set<ConstraintViolation<MemberDto>> constraintViolations = validator.validate(dto, CustomCheckGroups.class);
+//        if (!constraintViolations.isEmpty()) {
+//            List<String> violations = new ArrayList<>();
+//            constraintViolations.forEach(constraintViolation -> {
+//                violations.add(constraintViolation.getMessage());
+//            });
+//            throw new UmsException(violations.toString());
+//        }
         Member member = mapper.map(dto, Member.class);
         Member finalMember = member;
         member.getAddress().setMember(member);
@@ -176,5 +201,46 @@ public class MemberServiceImpl implements MemberService {
                 .map(Role::getName)
                 .map(SimpleGrantedAuthority::new)
                 .toList();
+    }
+
+    @Override
+    public List<IdNameDto> createMemberWithFile(MultipartFile file) {
+        try {
+            String filePath = Util.writeFile(file);
+            File newFile = new File(filePath);
+            List<MemberDto> dtoList = new CsvToBeanBuilder<MemberDto>(new FileReader(newFile))
+                    .withType(MemberDto.class)
+                    .build()
+                    .parse();
+            validateAfterReadFromCSV(dtoList);
+            List<IdNameDto> idNameDtoList = new ArrayList<>();
+            dtoList.forEach(member -> {
+                idNameDtoList.add(createMember(member));
+            });
+            return idNameDtoList;
+        } catch (FileNotFoundException e) {
+            throw new UmsException("File Not Found. Please Upload again");
+        }
+    }
+
+
+    private void validateAfterReadFromCSV(List<MemberDto> dtoList){
+        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+            Validator validator = factory.getValidator();
+            List<List<String>> violations = new ArrayList<>();
+            for(MemberDto member: dtoList) {
+                Set<ConstraintViolation<MemberDto>> violation = validator.validate(member, Default.class);
+                if (!ObjectUtils.isEmpty(violation)) {
+                    violations.add(Util.getMessages(violation));
+                }
+                violation = validator.validate(member, CustomCheckGroups.class);
+                if (!ObjectUtils.isEmpty(violation)) {
+                    violations.add(Util.getMessages(violation));
+                }
+            }
+            if (!violations.isEmpty()) {
+                throw new ConstrainViolationException(violations);
+            }
+        }
     }
 }

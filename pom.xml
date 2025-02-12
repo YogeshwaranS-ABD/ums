@@ -77,7 +77,11 @@
             <artifactId>hibernate-validator</artifactId>
             <version>9.0.0.CR1</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>5.10</version>
+        </dependency>
     </dependencies>
 
     <build>
